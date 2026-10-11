@@ -70,6 +70,8 @@ extension ShortcutAction {
         .showOCRWindow,
     ]
 
+    static let actionsRegisteredSystemWide: [ShortcutAction] = [.selectTranslate, .snipTranslate]
+
     /// All app-specific shortcut actions (only active when app is focused)
     static var appActions: [ShortcutAction] {
         allCases.filter { !globalActions.contains($0) }

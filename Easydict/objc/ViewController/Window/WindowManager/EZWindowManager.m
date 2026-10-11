@@ -145,6 +145,7 @@ static EZWindowManager *_instance;
 
     [self.eventMonitor setDismissAllNotPinndFloatingWindowBlock:^{
         mm_strongify(self);
+        self.lastFrontmostApplication = nil;
         if (self->_miniWindow) {
             [self closeFloatingWindowIfNotPinnedOrMain:EZWindowTypeMini];
         }

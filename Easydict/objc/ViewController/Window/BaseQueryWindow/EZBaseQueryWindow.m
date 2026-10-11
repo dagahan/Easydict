@@ -100,7 +100,7 @@
     _pin = pin;
 
     // !!!: Do not use kCGMaximumWindowLevel, otherwise it will obscure the tooltip.
-    NSWindowLevel level = pin ? kCGUtilityWindowLevel : kCGNormalWindowLevel;
+    NSWindowLevel level = pin ? kCGUtilityWindowLevel : (self.floatingPanel ? EZFloatingWindowLevel : kCGNormalWindowLevel);
     self.level = level;
 }
 
@@ -112,6 +112,10 @@
 
 - (BOOL)canBecomeMainWindow {
     return YES;
+}
+
+- (NSAccessibilitySubrole)accessibilitySubrole {
+    return self.floatingPanel ? NSAccessibilitySystemDialogSubrole : [super accessibilitySubrole];
 }
 
 - (NSTimeInterval)animationResizeTime:(NSRect)newFrame {
@@ -138,13 +142,6 @@
 
 - (void)windowWillClose:(NSNotification *)notification {
     [self.queryViewController cancelAutoQuery];
-}
-
-- (void)windowDidResignKey:(NSNotification *)notification {
-    //    MMLogInfo(@"windowDidResignKey: %@", self);
-    
-    // Close floating window when losing focus if it's not pinned or main window.
-    [EZWindowManager.shared closeFloatingWindowIfNotPinned:self.windowType exceptWindowType:EZWindowTypeMain];
 }
 
 - (void)windowDidResize:(NSNotification *)aNotification {
