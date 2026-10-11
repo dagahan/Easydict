@@ -57,22 +57,26 @@ extension ShortcutManager {
 
     /// Bind global shortcut action (registers as system-wide hotkey)
     func bindingGlobalShortcutAction(keyCombo: KeyCombo?, action: ShortcutAction) {
+        let identifierSurvivingSecureInput = action.rawValue + ".withControl"
         HotKeyCenter.shared.unregisterHotKey(with: action.rawValue)
+        HotKeyCenter.shared.unregisterHotKey(with: identifierSurvivingSecureInput)
 
-        // Ensure the action is a global action and keyCombo is valid
         guard let keyCombo, ShortcutAction.actionsRegisteredSystemWide.contains(action) else {
             return
         }
 
-        let hotKey = HotKey(
-            identifier: action.rawValue,
-            keyCombo: keyCombo
-        ) { _ in
-            Task { @MainActor in
-                action.executeAction()
-            }
+        let keyComboSurvivingSecureInput = KeyCombo(
+            key: keyCombo.key,
+            cocoaModifiers: keyCombo.keyEquivalentModifierMask.union(.control)
+        )
+        let identifiedKeyCombos = [(action.rawValue, keyCombo)]
+            + (keyComboSurvivingSecureInput.map { [(identifierSurvivingSecureInput, $0)] } ?? [])
+        for (identifier, keyCombo) in identifiedKeyCombos {
+            HotKey(identifier: identifier, keyCombo: keyCombo) { _ in
+                Task { @MainActor in
+                    action.executeAction()
+                }
+            }.register()
         }
-
-        hotKey.register()
     }
 }
